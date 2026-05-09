@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import profiles, projects
+from app.db.sqlite import initialize_database
 
 app = FastAPI(
     title="Student Exchange Hub API",
@@ -19,6 +20,11 @@ app.add_middleware(
 
 app.include_router(profiles.router, prefix="/api/v1")
 app.include_router(projects.router, prefix="/api/v1")
+
+
+@app.on_event("startup")
+def startup_event():
+    initialize_database()
 
 
 @app.get("/")
