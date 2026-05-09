@@ -1,6 +1,30 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getProfile, getProjectsByIds } from '../api';
 
-const DashboardPage = () => (
+const defaultProjects = [
+    { projectId: 'local_1', projectName: 'Hyper-Local Logistics in Tokyo Core', aboutPitch: 'Research Phase', createdAt: '2024-03-12T00:00:00Z', budgetCurrency: 'USD' },
+    { projectId: 'local_2', projectName: 'Cross-Border Academic Verification', aboutPitch: 'In Review', createdAt: '2024-02-28T00:00:00Z', budgetCurrency: 'USD' },
+];
+
+const DashboardPage = () => {
+    const [profile, setProfile] = useState(null);
+    const [projects, setProjects] = useState(defaultProjects);
+
+    useEffect(() => {
+        getProfile('alexrivers')
+            .then(setProfile)
+            .catch(() => setProfile(null));
+
+        getProjectsByIds()
+            .then((items) => setProjects(items.slice(0, 2)))
+            .catch(() => setProjects(defaultProjects));
+    }, []);
+
+    const welcomeName = profile?.username || 'Alex';
+    const currentLocation = [profile?.targetCollege, profile?.targetCountry].filter(Boolean).join(', ') || 'Tokyo, JP';
+
+    return (
     <div className="ml-[280px] pt-20 p-8 min-h-screen space-y-6">
         <section className="relative h-[420px] rounded-3xl overflow-hidden glass-panel group">
             <div className="absolute inset-0 z-0">
@@ -16,8 +40,8 @@ const DashboardPage = () => (
                         </div>
                     </div>
                     <div>
-                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">Currently in: Tokyo, JP</span>
-                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, Alex.</h2>
+                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">Currently in: {currentLocation}</span>
+                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, {welcomeName}.</h2>
                         <p className="text-on-surface-variant text-lg mt-2 max-w-2xl font-body-lg">Designing the next generation of modular academic exchanges across 12 countries.</p>
                     </div>
                 </div>
@@ -93,22 +117,19 @@ const DashboardPage = () => (
                     <Link to="/explore" className="text-primary hover:underline text-sm font-bold">View All Archive</Link>
                 </div>
                 <div className="space-y-4">
-                    {[
-                        { title: "Hyper-Local Logistics in Tokyo Core", phase: "Research Phase", date: "Mar 12, 2024", tags: ["LOGISTICS", "SUSTAINABILITY"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhy3jsrbb4wj2_afrwE33uinCjm9hYljwhX_wwqnvs2FmjXF6epmd2quvvhoJWbJlhaOjD2c2kiHmXpSl5IUBpKy3U8fh53MOTH_ZVDYSZPqMt8DbH7PSIG7UHDqwFoxE5fGSAc0Gzk6tWz3p9VQLLH-_V67yaWt5d7WneLw0Bx1P_cVn2yJK41yUjM-2UXwzOCSI83o0TQ_Rr0av1xs042Z1Tuu8Nm50dMpYvDdj-bxoHxI-eSj4RmUP1KyxOYQdIJOPFGNTi0q0" },
-                        { title: "Cross-Border Academic Verification", phase: "In Review", date: "Feb 28, 2024", tags: ["BLOCKCHAIN", "EDUCATION"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCPtr1bXA1LAGfsC7YXCXoFDTl2iV2FTNRllFc8uQdUBP1Hu9BniEhlQWVKmkEJga2BixaDkU1mSvsZXcRPymddhGV-EeYpG0ntIogqEJzK2lMYyB8qcjIRXFDmYjxky_Rfbs9NN97VN-rQMcPBgd3Eulf2wGSn4mwaWipWoRV9FLQ72FkaKHwZKINR1c2IdXloVslNaJpVGidu_xpol6JlD1bMy5g7NIkU0f3lQQiAmgUBnd4A85yK_E7v_gLMiPj6Vr2sRQDP3tQ" }
-                    ].map((proj, idx) => (
-                        <div key={idx} className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
+                    {projects.map((proj, idx) => (
+                        <div key={proj.projectId} className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
                             <div className="w-48 h-32 rounded-2xl overflow-hidden shrink-0 stitch-border">
-                                <img src={proj.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={proj.title} />
+                                <img src={idx === 0 ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBhy3jsrbb4wj2_afrwE33uinCjm9hYljwhX_wwqnvs2FmjXF6epmd2quvvhoJWbJlhaOjD2c2kiHmXpSl5IUBpKy3U8fh53MOTH_ZVDYSZPqMt8DbH7PSIG7UHDqwFoxE5fGSAc0Gzk6tWz3p9VQLLH-_V67yaWt5d7WneLw0Bx1P_cVn2yJK41yUjM-2UXwzOCSI83o0TQ_Rr0av1xs042Z1Tuu8Nm50dMpYvDdj-bxoHxI-eSj4RmUP1KyxOYQdIJOPFGNTi0q0" : "https://lh3.googleusercontent.com/aida-public/AB6AXuCPtr1bXA1LAGfsC7YXCXoFDTl2iV2FTNRllFc8uQdUBP1Hu9BniEhlQWVKmkEJga2BixaDkU1mSvsZXcRPymddhGV-EeYpG0ntIogqEJzK2lMYyB8qcjIRXFDmYjxky_Rfbs9NN97VN-rQMcPBgd3Eulf2wGSn4mwaWipWoRV9FLQ72FkaKHwZKINR1c2IdXloVslNaJpVGidu_xpol6JlD1bMy5g7NIkU0f3lQQiAmgUBnd4A85yK_E7v_gLMiPj6Vr2sRQDP3tQ"} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={proj.projectName} />
                             </div>
                             <div className="flex-1 py-1">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">{proj.phase}</span>
-                                    <span className="font-data-sm text-on-surface-variant text-xs">{proj.date}</span>
+                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">{proj.aboutPitch || 'In Progress'}</span>
+                                    <span className="font-data-sm text-on-surface-variant text-xs">{new Date(proj.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                 </div>
-                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{proj.title}</h4>
+                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{proj.projectName}</h4>
                                 <div className="flex gap-2 mt-4">
-                                    {proj.tags.map(t => <div key={t} className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{t}</div>)}
+                                    {[proj.budgetCurrency || 'USD', proj.ownerUsername || 'TEAM'].map((tag) => <div key={tag} className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{tag}</div>)}
                                 </div>
                             </div>
                         </div>
@@ -117,6 +138,7 @@ const DashboardPage = () => (
             </div>
         </div>
     </div>
-);
+    );
+};
 
 export default DashboardPage;

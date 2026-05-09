@@ -1,4 +1,21 @@
-const SettingsPage = () => (
+import { useEffect, useState } from 'react';
+import { getProfile } from '../api';
+
+const SettingsPage = () => {
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        getProfile('alexrivers')
+            .then(setProfile)
+            .catch(() => setProfile(null));
+    }, []);
+
+    const displayName = profile?.username ? profile.username.replace(/(^\w)|(\s\w)/g, (match) => match.toUpperCase()) : 'Alex Rivers';
+    const role = profile?.class_year || 'Senior Researcher';
+    const location = [profile?.targetCollege, profile?.targetCountry].filter(Boolean).join(', ') || 'Zurich, Switzerland';
+    const about = profile?.bio || 'Senior Researcher focused on Distributed Systems and Quantum Cryptography. Currently bridge-funding my next exchange at ETH Zurich.';
+
+    return (
     <div className="ml-[280px] pt-20 p-8 min-h-screen">
         <div className="max-w-container-max mx-auto space-y-8">
             <section className="relative rounded-3xl overflow-hidden glass-panel">
@@ -15,11 +32,11 @@ const SettingsPage = () => (
                             </div>
                         </div>
                         <div className="pb-2">
-                            <h2 className="font-h1 text-h1 text-on-surface">Alex Rivers</h2>
+                            <h2 className="font-h1 text-h1 text-on-surface">{displayName}</h2>
                             <div className="flex items-center gap-3 mt-2">
-                                <span className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full font-data-sm text-data-sm">Senior Researcher</span>
+                                <span className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full font-data-sm text-data-sm">{role}</span>
                                 <span className="flex items-center gap-1 text-on-surface-variant font-data-sm text-data-sm">
-                                    <span className="material-symbols-outlined text-[16px]">location_on</span> Zurich, Switzerland
+                                    <span className="material-symbols-outlined text-[16px]">location_on</span> {location}
                                 </span>
                             </div>
                         </div>
@@ -33,9 +50,7 @@ const SettingsPage = () => (
                         <h3 className="font-h3 text-h3 flex items-center gap-3">
                             <span className="material-symbols-outlined text-primary">person</span> About Me
                         </h3>
-                        <p className="font-body-md text-on-surface-variant">
-                            Senior Researcher focused on Distributed Systems and Quantum Cryptography. Currently bridge-funding my next exchange at ETH Zurich.
-                        </p>
+                        <p className="font-body-md text-on-surface-variant">{about}</p>
                     </section>
                     <section className="glass-panel p-6 rounded-3xl space-y-4">
                         <h3 className="font-h3 text-h3 flex items-center gap-3">
@@ -83,6 +98,7 @@ const SettingsPage = () => (
             </div>
         </div>
     </div>
-);
+    );
+};
 
 export default SettingsPage;

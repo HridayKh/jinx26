@@ -1,12 +1,27 @@
+import { useEffect, useState } from 'react';
+import { getProjectsByIds } from '../api';
+
 const ExplorePage = () => {
-    const projects = [
-        { id: 1, title: "Quantum Mesh Networking", geo: "GER", icon: "biotech", desc: "Collaborative research initiative with TU Munich focusing on decentralized quantum key distribution and architectural mesh protocols.", color: "primary" },
-        { id: 2, title: "Urban Stitch Initiative", geo: "USA", icon: "architecture", desc: "Mapping modular transitions in sustainable architecture through a joint studio program with MIT and local Delhi urban planners.", color: "tertiary" },
-        { id: 3, title: "Cognitive Semantics Lab", geo: "JPN", icon: "language", desc: "Cross-cultural study on linguistic relativity and cognitive development in exchange students navigating Japanese and Hindi phonetic environments.", color: "secondary" },
-        { id: 4, title: "Economic Stitching Analysis", geo: "GBR", icon: "data_exploration", desc: "Post-Brexit trade flow modeling using graph theory to identify new bilateral exchange opportunities between UK and India.", color: "primary" },
-        { id: 5, title: "Boreal Bio-Diversity Flow", geo: "CAN", icon: "forest", desc: "Ecological tracking project monitoring migratory patterns and soil composition changes in response to rapid climate transitions.", color: "tertiary" },
-        { id: 6, title: "EV Infrastructure Stitch", geo: "FRA", icon: "electric_car", desc: "Designing modular charging networks for historic European city centers, optimizing grid transition and aesthetic preservation.", color: "secondary" }
-    ];
+    const [projects, setProjects] = useState([]);
+
+    useEffect(() => {
+        getProjectsByIds()
+            .then((items) => {
+                const palette = ['primary', 'tertiary', 'secondary'];
+                const icons = ['biotech', 'architecture', 'language', 'data_exploration', 'forest', 'electric_car'];
+                setProjects(
+                    items.map((item, idx) => ({
+                        id: item.projectId,
+                        title: item.projectName,
+                        geo: (item.budgetCurrency || 'USD').toUpperCase(),
+                        icon: icons[idx % icons.length],
+                        desc: item.description || item.aboutPitch || 'No project description available yet.',
+                        color: palette[idx % palette.length],
+                    }))
+                );
+            })
+            .catch(() => setProjects([]));
+    }, []);
 
     return (
         <div className="ml-[280px] pt-28 p-8 min-h-screen">

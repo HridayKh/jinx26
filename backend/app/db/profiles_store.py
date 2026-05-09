@@ -5,7 +5,18 @@ from datetime import datetime, timezone
 from app.models import ProfileCreate, ProfileUpdate, ProfileResponse
 
 # { username -> ProfileResponse }
-_profiles: dict[str, ProfileResponse] = {}
+_profiles: dict[str, ProfileResponse] = {
+    "alexrivers": ProfileResponse(
+        username="alexrivers",
+        bio="Senior researcher building modular academic exchange programs.",
+        class_year="Senior Researcher",
+        targetCollege="ETH Zurich",
+        homeCountry="India",
+        targetCountry="Switzerland",
+        prefCurrency="CHF",
+        createdAt=datetime(2024, 9, 12, 8, 30, tzinfo=timezone.utc),
+    )
+}
 
 
 def create_profile(data: ProfileCreate) -> ProfileResponse:
