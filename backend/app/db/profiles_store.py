@@ -36,6 +36,7 @@ def create_profile(data: ProfileCreate) -> ProfileResponse:
                 profile.createdAt.isoformat(),
             ),
         )
+        connection.commit()
     return profile
 
 
@@ -77,10 +78,12 @@ def update_profile(username: str, data: ProfileUpdate) -> ProfileResponse | None
                 username,
             ),
         )
+        connection.commit()
     return updated
 
 
 def delete_profile(username: str) -> bool:
     with get_connection() as connection:
         result = connection.execute("DELETE FROM profiles WHERE username = ?", (username,))
+        connection.commit()
         return result.rowcount > 0

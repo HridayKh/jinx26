@@ -42,6 +42,7 @@ def create_project(data: ProjectCreate) -> ProjectResponse:
                 project.createdAt.isoformat(),
             ),
         )
+        connection.commit()
     return project
 
 
@@ -82,10 +83,12 @@ def update_project(project_id: str, data: ProjectUpdate) -> ProjectResponse | No
                 project_id,
             ),
         )
+        connection.commit()
     return updated
 
 
 def delete_project(project_id: str) -> bool:
     with get_connection() as connection:
         result = connection.execute("DELETE FROM projects WHERE project_id = ?", (project_id,))
+        connection.commit()
         return result.rowcount > 0
