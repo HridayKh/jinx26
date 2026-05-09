@@ -47,7 +47,9 @@ const SettingsPage = () => {
                                     Class {profile?.class_year || 'N/A'}
                                 </span>
                                 <span className="flex items-center gap-1 text-on-surface-variant font-data-sm text-data-sm">
-                                    <span className="material-symbols-outlined text-[16px]">location_on</span> {profile?.homeCountry || 'N/A'} → {profile?.targetCountry || 'N/A'}
+                                    <span className="material-symbols-outlined text-[16px]">location_on</span> {profile?.homeCountry || 'N/A'}
+                                    <span className="material-symbols-outlined text-[16px]">arrow_right_alt</span>
+                                    {profile?.targetCountry || 'N/A'}
                                 </span>
                             </div>
                         </div>

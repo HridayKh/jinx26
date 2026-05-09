@@ -28,6 +28,10 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, []);
 
+    const createdDateText = project?.createdAt && !Number.isNaN(Date.parse(project.createdAt))
+        ? new Date(project.createdAt).toLocaleDateString()
+        : 'Date unavailable';
+
     return (
     <div className="ml-[280px] pt-20 p-8 min-h-screen space-y-6">
         {loading && <p className="text-on-surface-variant">Loading dashboard...</p>}
@@ -135,7 +139,7 @@ const DashboardPage = () => {
                             <div className="flex-1 py-1">
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">From API</span>
-                                    <span className="font-data-sm text-on-surface-variant text-xs">{new Date(project.createdAt).toLocaleDateString()}</span>
+                                    <span className="font-data-sm text-on-surface-variant text-xs">{createdDateText}</span>
                                 </div>
                                 <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{project.projectName}</h4>
                                 <div className="flex gap-2 mt-4">
