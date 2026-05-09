@@ -4,7 +4,7 @@ const normalizeProfilePayload = (payload = {}) => {
     const normalized = { ...payload };
 
     // Normalize UI payloads that send `class` to backend field `class_year`.
-    if (normalized.class && !normalized.class_year) {
+    if (normalized.class !== undefined && normalized.class_year === undefined) {
         normalized.class_year = normalized.class;
         delete normalized.class;
     }

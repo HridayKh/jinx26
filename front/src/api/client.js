@@ -25,8 +25,14 @@ export const apiRequest = async (path, options = {}) => {
         const message = typeof data === 'object' && data?.detail
             ? data.detail
             : `API request failed: ${method} ${path} (status ${response.status})`;
+        const error = new Error(message);
 
-        throw new Error(message);
+        error.status = response.status;
+        error.path = path;
+        error.method = method;
+        error.data = data;
+
+        throw error;
     }
 
     return data;
