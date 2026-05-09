@@ -38,7 +38,7 @@ const ExplorePage = () => {
                         </button>
                     </div>
                 </div>
-                {loading && <p className="text-on-surface-variant">Loading repository data...</p>}
+                {loading && <p className="text-on-surface-variant">Loading project data...</p>}
                 {error && <p className="text-red-400">{error}</p>}
 
                 {!loading && !error && project && (

@@ -56,12 +56,12 @@ const DashboardPage = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10">
                     <div className="space-y-1">
-                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Seed Project Loaded</p>
-                        <p className="text-h2 font-h2 text-white">{project ? 'YES' : 'NO'}</p>
+                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">API Project Status</p>
+                        <p className="text-h2 font-h2 text-white">{project ? 'Online' : 'Missing'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Target Country Set</p>
-                        <p className="text-h2 font-h2 text-white">{profile?.targetCountry ? 'YES' : 'NO'}</p>
+                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Target Country</p>
+                        <p className="text-h2 font-h2 text-white">{profile?.targetCountry || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Preferred Currency</p>
