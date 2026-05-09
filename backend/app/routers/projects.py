@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Path, status
 from app.models import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.db import projects_store
 
@@ -12,25 +12,25 @@ def create_project(data: ProjectCreate):
 
 
 @router.get("/{projectId}", response_model=ProjectResponse)
-def read_project(projectId: str):
+def read_project(project_id: str = Path(..., alias="projectId")):
     """GET /api/v1/projects/:projectId — Retrieve a project."""
-    project = projects_store.get_project(projectId)
+    project = projects_store.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
     return project
 
 
 @router.put("/{projectId}", response_model=ProjectResponse)
-def update_project(projectId: str, data: ProjectUpdate):
+def update_project(data: ProjectUpdate, project_id: str = Path(..., alias="projectId")):
     """PUT /api/v1/projects/:projectId — Update a project."""
-    project = projects_store.update_project(projectId, data)
+    project = projects_store.update_project(project_id, data)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
     return project
 
 
 @router.delete("/{projectId}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(projectId: str):
+def delete_project(project_id: str = Path(..., alias="projectId")):
     """DELETE /api/v1/projects/:projectId — Delete a project."""
-    if not projects_store.delete_project(projectId):
+    if not projects_store.delete_project(project_id):
         raise HTTPException(status_code=404, detail="Project not found.")
