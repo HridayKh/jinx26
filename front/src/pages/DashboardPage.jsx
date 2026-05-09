@@ -28,8 +28,9 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, []);
 
-    const createdDateText = project?.createdAt && !Number.isNaN(Date.parse(project.createdAt))
-        ? new Date(project.createdAt).toLocaleDateString()
+    const createdDate = project?.createdAt ? new Date(project.createdAt) : null;
+    const createdDateText = createdDate && !Number.isNaN(createdDate.getTime())
+        ? createdDate.toLocaleDateString()
         : 'Date unavailable';
 
     return (

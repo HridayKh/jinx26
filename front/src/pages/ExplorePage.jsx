@@ -23,6 +23,9 @@ const ExplorePage = () => {
     }, []);
 
     const projectDescription = project?.description || project?.aboutPitch || 'No description available.';
+    const budgetLabel = project?.budgetValue && project?.budgetCurrency
+        ? `${project.budgetValue} ${project.budgetCurrency}`
+        : 'Budget not set';
 
     return (
         <div className="ml-[280px] pt-28 p-8 min-h-screen">
@@ -64,7 +67,7 @@ const ExplorePage = () => {
                                 <div className="h-[1px] w-full bg-white/10"></div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-xs text-on-surface-variant font-data-sm">
-                                        {project.budgetValue ? `${project.budgetValue} ${project.budgetCurrency || ''}`.trim() : 'Budget not set'}
+                                        {budgetLabel}
                                     </span>
                                     <span className="material-symbols-outlined text-primary">arrow_forward</span>
                                 </div>

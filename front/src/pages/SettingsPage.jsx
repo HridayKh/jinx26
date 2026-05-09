@@ -41,7 +41,7 @@ const SettingsPage = () => {
                             </div>
                         </div>
                         <div className="pb-2">
-                            <h2 className="font-h1 text-h1 text-on-surface">{profile?.username || 'Student'}</h2>
+                            <h2 className="font-h1 text-h1 text-on-surface">{profile?.username || 'Unknown User'}</h2>
                             <div className="flex items-center gap-3 mt-2">
                                 <span className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full font-data-sm text-data-sm">
                                     Class {profile?.class_year || 'N/A'}
