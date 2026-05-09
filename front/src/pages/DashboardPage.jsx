@@ -1,7 +1,36 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getProfile, getProject } from '../api';
 
-const DashboardPage = () => (
+const DashboardPage = () => {
+    const [profile, setProfile] = useState(null);
+    const [project, setProject] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const [profileData, projectData] = await Promise.all([
+                    getProfile('demo_user'),
+                    getProject('proj_seed01'),
+                ]);
+                setProfile(profileData);
+                setProject(projectData);
+            } catch (err) {
+                setError(err.message || 'Failed to load dashboard data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    return (
     <div className="ml-[280px] pt-20 p-8 min-h-screen space-y-6">
+        {loading && <p className="text-on-surface-variant">Loading dashboard...</p>}
+        {error && <p className="text-red-400">{error}</p>}
         <section className="relative h-[420px] rounded-3xl overflow-hidden glass-panel group">
             <div className="absolute inset-0 z-0">
                 <img className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGjIo3ERZ9epmRpBh_dma9fF7mztRgq2_r08F-3A3TUwAd_OpV8Y1jqt1XFv9Hbt1I-VojCKbibdhKEBRZajjqAb-w4i1zwzcyKK1IwlQKB1M86S7paHzcfmPa21HWMUz_K1hS9SsuRR-F7va9fq9emEo657TASDrv_dkpUY7rIJbDqCC8zUE2IPLFLYhL006PFvYJJZ6qi2sXEYDobjlql3_y5ikS-84txaPvwTpS3kE6QSYPGYsDP4418ow2US85KxInYvdlAq0" alt="Tokyo" />
@@ -16,23 +45,27 @@ const DashboardPage = () => (
                         </div>
                     </div>
                     <div>
-                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">Currently in: Tokyo, JP</span>
-                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, Alex.</h2>
-                        <p className="text-on-surface-variant text-lg mt-2 max-w-2xl font-body-lg">Designing the next generation of modular academic exchanges across 12 countries.</p>
+                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">
+                            Home: {profile?.homeCountry || 'N/A'} | Target: {profile?.targetCountry || 'N/A'}
+                        </span>
+                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, {profile?.username || 'Student'}.</h2>
+                        <p className="text-on-surface-variant text-lg mt-2 max-w-2xl font-body-lg">
+                            {project?.aboutPitch || profile?.bio || 'Your exchange dashboard is now connected to backend APIs.'}
+                        </p>
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10">
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Projects Built</p>
-                        <p className="text-h2 font-h2 text-white">12</p>
+                        <p className="text-h2 font-h2 text-white">{project ? '01' : '00'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Countries Explored</p>
-                        <p className="text-h2 font-h2 text-white">05</p>
+                        <p className="text-h2 font-h2 text-white">{profile?.targetCountry ? '01' : '00'}</p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Students Impacted</p>
-                        <p className="text-h2 font-h2 text-white">154</p>
+                        <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Preferred Currency</p>
+                        <p className="text-h2 font-h2 text-white">{profile?.prefCurrency || 'N/A'}</p>
                     </div>
                 </div>
             </div>
@@ -93,30 +126,31 @@ const DashboardPage = () => (
                     <Link to="/explore" className="text-primary hover:underline text-sm font-bold">View All Archive</Link>
                 </div>
                 <div className="space-y-4">
-                    {[
-                        { title: "Hyper-Local Logistics in Tokyo Core", phase: "Research Phase", date: "Mar 12, 2024", tags: ["LOGISTICS", "SUSTAINABILITY"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhy3jsrbb4wj2_afrwE33uinCjm9hYljwhX_wwqnvs2FmjXF6epmd2quvvhoJWbJlhaOjD2c2kiHmXpSl5IUBpKy3U8fh53MOTH_ZVDYSZPqMt8DbH7PSIG7UHDqwFoxE5fGSAc0Gzk6tWz3p9VQLLH-_V67yaWt5d7WneLw0Bx1P_cVn2yJK41yUjM-2UXwzOCSI83o0TQ_Rr0av1xs042Z1Tuu8Nm50dMpYvDdj-bxoHxI-eSj4RmUP1KyxOYQdIJOPFGNTi0q0" },
-                        { title: "Cross-Border Academic Verification", phase: "In Review", date: "Feb 28, 2024", tags: ["BLOCKCHAIN", "EDUCATION"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCPtr1bXA1LAGfsC7YXCXoFDTl2iV2FTNRllFc8uQdUBP1Hu9BniEhlQWVKmkEJga2BixaDkU1mSvsZXcRPymddhGV-EeYpG0ntIogqEJzK2lMYyB8qcjIRXFDmYjxky_Rfbs9NN97VN-rQMcPBgd3Eulf2wGSn4mwaWipWoRV9FLQ72FkaKHwZKINR1c2IdXloVslNaJpVGidu_xpol6JlD1bMy5g7NIkU0f3lQQiAmgUBnd4A85yK_E7v_gLMiPj6Vr2sRQDP3tQ" }
-                    ].map((proj, idx) => (
-                        <div key={idx} className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
+                    {project && (
+                        <div className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
                             <div className="w-48 h-32 rounded-2xl overflow-hidden shrink-0 stitch-border">
-                                <img src={proj.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={proj.title} />
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhy3jsrbb4wj2_afrwE33uinCjm9hYljwhX_wwqnvs2FmjXF6epmd2quvvhoJWbJlhaOjD2c2kiHmXpSl5IUBpKy3U8fh53MOTH_ZVDYSZPqMt8DbH7PSIG7UHDqwFoxE5fGSAc0Gzk6tWz3p9VQLLH-_V67yaWt5d7WneLw0Bx1P_cVn2yJK41yUjM-2UXwzOCSI83o0TQ_Rr0av1xs042Z1Tuu8Nm50dMpYvDdj-bxoHxI-eSj4RmUP1KyxOYQdIJOPFGNTi0q0" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={project.projectName} />
                             </div>
                             <div className="flex-1 py-1">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">{proj.phase}</span>
-                                    <span className="font-data-sm text-on-surface-variant text-xs">{proj.date}</span>
+                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">From API</span>
+                                    <span className="font-data-sm text-on-surface-variant text-xs">{new Date(project.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{proj.title}</h4>
+                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{project.projectName}</h4>
                                 <div className="flex gap-2 mt-4">
-                                    {proj.tags.map(t => <div key={t} className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{t}</div>)}
+                                    <div className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{project.ownerUsername}</div>
+                                    {project.budgetCurrency && (
+                                        <div className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{project.budgetCurrency}</div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>
     </div>
 );
+};
 
 export default DashboardPage;

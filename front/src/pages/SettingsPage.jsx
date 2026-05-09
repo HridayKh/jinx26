@@ -1,6 +1,31 @@
-const SettingsPage = () => (
-    <div className="ml-[280px] pt-20 p-8 min-h-screen">
-        <div className="max-w-container-max mx-auto space-y-8">
+import { useEffect, useState } from 'react';
+import { getProfile } from '../api';
+
+const SettingsPage = () => {
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const data = await getProfile('demo_user');
+                setProfile(data);
+            } catch (err) {
+                setError(err.message || 'Failed to load profile.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    return (
+        <div className="ml-[280px] pt-20 p-8 min-h-screen">
+            {loading && <p className="text-on-surface-variant">Loading profile...</p>}
+            {error && <p className="text-red-400">{error}</p>}
+            <div className="max-w-container-max mx-auto space-y-8">
             <section className="relative rounded-3xl overflow-hidden glass-panel">
                 <div className="h-64 w-full relative">
                     <img className="w-full h-full object-cover opacity-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6GZQ73V2LYR7r5vGBGuXFmAwvBkOxX8U2kFJPxViy3smctZ_Z0HS1ZUNIVSXKLM1O0EKuC48WJ1ddjjYXlYkypAb9Rx6Y1vGE4Z8Cb8deMNTc_ffKmqFuOqHHh_8g3RYymnO6WawiCsQ9V2pldzx7XnShfce9vZv25y2VnAccmOr47S-mmTGIpYCQZDAPZtPR8C0ppGHYiYP9a2wSHEMrjVR0E6s3_K-kzJZr56IVJT_Yh9_YBpmh3vNUtWgyV_MKqFg68X26qIk" alt="Banner" />
@@ -15,11 +40,13 @@ const SettingsPage = () => (
                             </div>
                         </div>
                         <div className="pb-2">
-                            <h2 className="font-h1 text-h1 text-on-surface">Alex Rivers</h2>
+                            <h2 className="font-h1 text-h1 text-on-surface">{profile?.username || 'Student'}</h2>
                             <div className="flex items-center gap-3 mt-2">
-                                <span className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full font-data-sm text-data-sm">Senior Researcher</span>
+                                <span className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full font-data-sm text-data-sm">
+                                    Class {profile?.class_year || 'N/A'}
+                                </span>
                                 <span className="flex items-center gap-1 text-on-surface-variant font-data-sm text-data-sm">
-                                    <span className="material-symbols-outlined text-[16px]">location_on</span> Zurich, Switzerland
+                                    <span className="material-symbols-outlined text-[16px]">location_on</span> {profile?.homeCountry || 'N/A'} → {profile?.targetCountry || 'N/A'}
                                 </span>
                             </div>
                         </div>
@@ -34,7 +61,7 @@ const SettingsPage = () => (
                             <span className="material-symbols-outlined text-primary">person</span> About Me
                         </h3>
                         <p className="font-body-md text-on-surface-variant">
-                            Senior Researcher focused on Distributed Systems and Quantum Cryptography. Currently bridge-funding my next exchange at ETH Zurich.
+                            {profile?.bio || 'No bio has been added yet.'}
                         </p>
                     </section>
                     <section className="glass-panel p-6 rounded-3xl space-y-4">
@@ -42,7 +69,9 @@ const SettingsPage = () => (
                             <span className="material-symbols-outlined text-primary">star</span> Expertise
                         </h3>
                         <div className="flex flex-wrap gap-2">
-                            {['Neural Networks', 'Cryptography', 'Rust', 'Docker'].map(tag => (
+                            {[profile?.targetCollege, profile?.targetCountry, profile?.prefCurrency]
+                                .filter(Boolean)
+                                .map((tag) => (
                                 <span key={tag} className="px-3 py-1 bg-surface-container-highest border border-white/10 rounded-full font-data-sm text-data-sm">{tag}</span>
                             ))}
                         </div>
@@ -84,5 +113,6 @@ const SettingsPage = () => (
         </div>
     </div>
 );
+};
 
 export default SettingsPage;
