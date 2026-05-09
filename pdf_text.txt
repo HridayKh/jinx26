@@ -1,0 +1,54 @@
+Student Exchange Hub
+Hackathon Design Document (2-Hour Sprint)
+Project Type: Web MVP Timeline: 120 Minutes Status: Design Phase
+1. Objective & Vision
+To create a streamlined platform for exchange students to connect with peers and
+propose collaborative projects. The focus is on identity (Profiles) and action
+(Projects) to reduce the friction of moving to a new country.
+2. Data Models
+2.1 User Profile ("The Passport")
+The profile defines the user's current status and their future destination.
+Field Description Example
+Name / Username Primary Identifier @marcopolo_23
+Bio Short personal intro (max 150 chars)CS major moving to Tokyo!
+Class Academic Year Junior (Year 3)
+Target College Where the student is going Waseda University
+Home/Target CountryOrigin and Destination Italy → Japan
+Pref. Currency Primary currency for budgeting JPY (¥)
+2.2 Project ("The Initiative")
+Projects are actionable items a student wants to achieve during their exchange.
+Field Description Example
+Project Name Clear title of the goal Akihabara Tech Crawl
+About/Pitch One-line hook for the feed Exploring retro gaming tech.
+Description Full details of the plan Detailed itinerary and goals...
+Budget Detail Numeric value + Currency 5000 JPY
+3. System Architecture (MVP)
+Due to the 2-hour constraint, the system uses a Client-Side First approach.
+Frontend: React.js or Vue.js with Tailwind CSS for rapid UI building.
+Database: Firebase Firestore (NoSQL) for "plug-and-play" data persistence.
+Storage: Cloudinary or Firebase Storage for project photos.
+Hackathon Strategy: If backend setup exceeds 20 minutes, switch to 
+localStorage for demo persistence. 
+4. User Interface Requirements
+4.1 Discovery Feed
+A masonry or grid layout showing Project Cards. Each card must display:
+Thumbnail Photo
+Project Name & Pitch
+Owner's Target Country (as a Badge)
+Budget: Value + Currency
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+4.2 Profile Dashboard
+A "Passport" style card at the top, followed by a list of "My Projects" created by the
+user .
+5. Success Metrics for Pitch
+Time to Connection: How fast can a user find a project in their target country?
+Completeness: Does the profile provide enough trust for a stranger to
+collaborate?
+• 
+• 
