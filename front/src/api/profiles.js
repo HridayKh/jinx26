@@ -3,7 +3,7 @@ import { apiRequest } from './client';
 const normalizeProfilePayload = (payload = {}) => {
     const normalized = { ...payload };
 
-    // API design uses `class`, while backend model expects `class_year`.
+    // Normalize UI payloads that send `class` to backend field `class_year`.
     if (normalized.class && !normalized.class_year) {
         normalized.class_year = normalized.class;
         delete normalized.class;
