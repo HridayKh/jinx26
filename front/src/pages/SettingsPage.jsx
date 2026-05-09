@@ -66,7 +66,7 @@ const SettingsPage = () => {
                     </section>
                     <section className="glass-panel p-6 rounded-3xl space-y-4">
                         <h3 className="font-h3 text-h3 flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary">star</span> Expertise
+                            <span className="material-symbols-outlined text-primary">star</span> Profile Details
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {[profile?.targetCollege, profile?.targetCountry, profile?.prefCurrency]
