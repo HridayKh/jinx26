@@ -1,4 +1,30 @@
-const MyLabPage = () => (
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../components/AuthContext';
+
+const MyLabPage = () => {
+    const { user } = useAuth();
+    const [myProjects, setMyProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMyProjects = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/projects');
+                if (response.ok) {
+                    const data = await response.json();
+                    const filtered = data.filter(p => p.ownerUsername === user?.username);
+                    setMyProjects(filtered);
+                }
+            } catch (err) {
+                console.error("Failed to fetch my projects", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMyProjects();
+    }, [user?.username]);
+
+    return (
     <div className="ml-[280px] pt-28 p-8 min-h-screen">
         <div className="grid grid-cols-12 gap-6 max-w-container-max mx-auto">
             <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -13,42 +39,36 @@ const MyLabPage = () => (
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="glass-panel p-6 rounded-xl stitch-border hover:bg-white/5 transition-all group cursor-pointer">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">neurology</span>
+                    {loading ? (
+                        <div className="col-span-2 text-on-surface-variant">Loading lab workspace...</div>
+                    ) : myProjects.length === 0 ? (
+                        <div className="col-span-2 text-on-surface-variant">You have no active projects in your lab.</div>
+                    ) : myProjects.map((proj, idx) => {
+                        const isEven = idx % 2 === 0;
+                        const icon = isEven ? "neurology" : "travel_explore";
+                        const colorClass = isEven ? "primary" : "tertiary";
+                        return (
+                        <div key={proj.projectId} className="glass-panel p-6 rounded-xl stitch-border hover:bg-white/5 transition-all group cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`w-12 h-12 rounded-lg bg-${colorClass}/10 flex items-center justify-center text-${colorClass}`}>
+                                        <span className="material-symbols-outlined">{icon}</span>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full bg-${colorClass}/20 text-${colorClass} text-[10px] font-data-sm uppercase tracking-wider`}>Active</span>
+                                </div>
+                                <h3 className="font-h3 text-h3 text-on-surface mb-2">{proj.projectName}</h3>
+                                <p className="text-on-surface-variant font-body-md text-sm mb-6 line-clamp-2">{proj.aboutPitch || proj.description}</p>
                             </div>
-                            <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-data-sm uppercase tracking-wider">Active</span>
-                        </div>
-                        <h3 className="font-h3 text-h3 text-on-surface mb-2">Neural Mapping</h3>
-                        <p className="text-on-surface-variant font-body-md text-sm mb-6">Cross-cultural neurological responses to academic stimulus in exchange environments.</p>
-                        <div className="flex items-center justify-between">
-                            <div className="flex -space-x-3">
-                                <img className="w-8 h-8 rounded-full border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlCtIIvH4vYrGtGWt0e0jgnDr9gh40SuaqP2-kds3lokFJjtAKJxSOc-Xqx-OBaqUqhVGJll5kK-47-F57aAnnBBSHpjoYX52_p3_GrQiz7V9fM9e52505YOaDouzePa1cvQufdcWOWyMEkoytMMPPoi-c6zOoJkvQxfPyypWpqHXwJ-jw0k715iwhGD7rd--nw0rhdvQkNSmdWlvxsqqml2VUB9Ta339lz7yw_dHcD4KU3l7Oj98CP6_2dhBcZxwo9vrIegg2PpY" alt="team" />
-                                <div className="w-8 h-8 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center text-[10px] font-bold text-on-secondary-container">+2</div>
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="flex -space-x-3">
+                                    <div className="w-8 h-8 rounded-full border-2 border-surface bg-surface-variant flex items-center justify-center text-xs text-on-surface-variant font-bold">{proj.ownerUsername.charAt(0).toUpperCase()}</div>
+                                </div>
+                                <button className={`text-${colorClass} group-hover:translate-x-1 transition-transform`}>
+                                    <span className="material-symbols-outlined">arrow_forward</span>
+                                </button>
                             </div>
-                            <button className="text-primary group-hover:translate-x-1 transition-transform">
-                                <span className="material-symbols-outlined">arrow_forward</span>
-                            </button>
                         </div>
-                    </div>
-
-                    <div className="glass-panel p-6 rounded-xl stitch-border hover:bg-white/5 transition-all group cursor-pointer">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="w-12 h-12 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary">
-                                <span className="material-symbols-outlined">travel_explore</span>
-                            </div>
-                            <span className="px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-[10px] font-data-sm uppercase tracking-wider">Draft</span>
-                        </div>
-                        <h3 className="font-h3 text-h3 text-on-surface mb-2">Mobility Analysis</h3>
-                        <p className="text-on-surface-variant font-body-md text-sm mb-6">Quantitative study on urban mobility patterns for international students in Berlin.</p>
-                        <div className="flex items-center justify-between">
-                            <img className="w-8 h-8 rounded-full border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1JeZ_30f7DlolNIQrIVmDOWjt4pKpQ0wxOG4XF8awqG1lC1m1HicQSg0c9qNwdbNLKk9kAte646iF4AEaK4jhSTyt82zxF5zQU9pY0dJOgUMzHhJron_ROTHET1i3lWPpwWfDHEgbE108hO0MFv8xH55Qv1ND6HLz_gMrPElXTkl7TmUGe0mU4NhdCOupXNpYSGwMlPaS3p1KLoZ2rAL_Dgk0PLXXygiwJFitrz4fJ7pH_9XPLcTmgIAYxNBxgOciQM3qJepKZW4" alt="member" />
-                            <button className="text-on-surface-variant group-hover:translate-x-1 transition-transform">
-                                <span className="material-symbols-outlined">arrow_forward</span>
-                            </button>
-                        </div>
-                    </div>
+                    )})}
                 </div>
 
                 <div className="grid grid-cols-12 gap-6">
@@ -136,6 +156,7 @@ const MyLabPage = () => (
             </aside>
         </div>
     </div>
-);
+    );
+};
 
 export default MyLabPage;

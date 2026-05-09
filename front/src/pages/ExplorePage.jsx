@@ -1,12 +1,38 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 const ExplorePage = () => {
-    const projects = [
-        { id: 1, title: "Quantum Mesh Networking", geo: "GER", icon: "biotech", desc: "Collaborative research initiative with TU Munich focusing on decentralized quantum key distribution and architectural mesh protocols.", color: "primary" },
-        { id: 2, title: "Urban Stitch Initiative", geo: "USA", icon: "architecture", desc: "Mapping modular transitions in sustainable architecture through a joint studio program with MIT and local Delhi urban planners.", color: "tertiary" },
-        { id: 3, title: "Cognitive Semantics Lab", geo: "JPN", icon: "language", desc: "Cross-cultural study on linguistic relativity and cognitive development in exchange students navigating Japanese and Hindi phonetic environments.", color: "secondary" },
-        { id: 4, title: "Economic Stitching Analysis", geo: "GBR", icon: "data_exploration", desc: "Post-Brexit trade flow modeling using graph theory to identify new bilateral exchange opportunities between UK and India.", color: "primary" },
-        { id: 5, title: "Boreal Bio-Diversity Flow", geo: "CAN", icon: "forest", desc: "Ecological tracking project monitoring migratory patterns and soil composition changes in response to rapid climate transitions.", color: "tertiary" },
-        { id: 6, title: "EV Infrastructure Stitch", geo: "FRA", icon: "electric_car", desc: "Designing modular charging networks for historic European city centers, optimizing grid transition and aesthetic preservation.", color: "secondary" }
-    ];
+    const navigate = useNavigate();
+    const [projects, setProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/projects');
+                if (!response.ok) throw new Error('Failed to fetch projects');
+                const data = await response.json();
+                setProjects(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+    }, []);
+
+    const getRandomColor = (id) => {
+        const colors = ['primary', 'tertiary', 'secondary'];
+        // Use id length or sum of chars to make it deterministic but pseudorandom
+        const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return colors[hash % colors.length];
+    };
+
+    if (loading) return <div className="ml-[280px] pt-28 p-8 min-h-screen text-on-surface">Loading repository...</div>;
+    if (error) return <div className="ml-[280px] pt-28 p-8 min-h-screen text-red-400">Error: {error}</div>;
 
     return (
         <div className="ml-[280px] pt-28 p-8 min-h-screen">
@@ -26,19 +52,27 @@ const ExplorePage = () => {
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map(proj => (
-                        <div key={proj.id} className="glass-card p-6 rounded-xl flex flex-col transition-all hover:border-primary/50 group cursor-pointer">
+                    {projects.length === 0 ? (
+                        <div className="text-on-surface-variant text-center col-span-3 py-12">No projects found.</div>
+                    ) : projects.map(proj => {
+                        const color = getRandomColor(proj.projectId);
+                        return (
+                        <div 
+                            key={proj.projectId} 
+                            onClick={() => navigate(`/projects/${proj.projectId}`)}
+                            className="glass-card p-6 rounded-xl flex flex-col transition-all hover:border-primary/50 group cursor-pointer"
+                        >
                             <div className="flex justify-between items-start mb-6">
-                                <div className={`w-12 h-12 rounded-lg bg-${proj.color}-container/20 flex items-center justify-center border border-white/5`}>
-                                    <span className={`material-symbols-outlined text-${proj.color} text-2xl`}>{proj.icon}</span>
+                                <div className={`w-12 h-12 rounded-lg bg-${color}-container/20 flex items-center justify-center border border-white/5`}>
+                                    <span className={`material-symbols-outlined text-${color} text-2xl`}>public</span>
                                 </div>
                                 <div className="px-3 py-1 bg-surface-container-high rounded-full border border-white/10 flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-[14px]">public</span>
-                                    <span className="font-data-sm text-[12px] uppercase">{proj.geo}</span>
+                                    <span className="material-symbols-outlined text-[14px]">person</span>
+                                    <span className="font-data-sm text-[12px] uppercase">{proj.ownerUsername}</span>
                                 </div>
                             </div>
-                            <h3 className="font-h3 text-h3 text-primary mb-3 group-hover:text-primary-container transition-colors">{proj.title}</h3>
-                            <p className="text-on-surface-variant font-body-md line-clamp-3 mb-6">{proj.desc}</p>
+                            <h3 className="font-h3 text-h3 text-primary mb-3 group-hover:text-primary-container transition-colors">{proj.projectName}</h3>
+                            <p className="text-on-surface-variant font-body-md line-clamp-3 mb-6">{proj.aboutPitch || proj.description || 'No description provided.'}</p>
                             <div className="mt-auto space-y-4">
                                 <div className="h-[1px] w-full bg-white/10"></div>
                                 <div className="flex justify-between items-center">
@@ -47,7 +81,8 @@ const ExplorePage = () => {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </div>
         </div>

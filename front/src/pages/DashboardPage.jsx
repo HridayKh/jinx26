@@ -1,6 +1,81 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 
-const DashboardPage = () => (
+const getWeatherDetails = (code) => {
+    if (code === 0) return { icon: 'wb_sunny', desc: 'Clear Skies' };
+    if (code === 1 || code === 2) return { icon: 'partly_cloudy_day', desc: 'Partly Cloudy' };
+    if (code === 3) return { icon: 'wb_cloudy', desc: 'Overcast' };
+    if ([45, 48].includes(code)) return { icon: 'foggy', desc: 'Foggy' };
+    if ([51, 53, 55, 56, 57].includes(code)) return { icon: 'grain', desc: 'Drizzle' };
+    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return { icon: 'rainy', desc: 'Rain' };
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: 'ac_unit', desc: 'Snow' };
+    if ([95, 96, 99].includes(code)) return { icon: 'thunderstorm', desc: 'Storm' };
+    return { icon: 'cloud', desc: 'Unknown' };
+};
+
+const DashboardPage = () => {
+    const { user } = useAuth();
+    const [recentProjects, setRecentProjects] = useState([]);
+    const [totalProjects, setTotalProjects] = useState(0);
+    const [weatherData, setWeatherData] = useState(null);
+    const [weatherLoading, setWeatherLoading] = useState(true);
+
+    useEffect(() => {
+        // Fetch recent projects
+        const fetchRecent = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/projects');
+                if (response.ok) {
+                    const data = await response.json();
+                    const userProjects = data.filter(p => p.ownerUsername === user?.username);
+                    setTotalProjects(userProjects.length);
+                    setRecentProjects(userProjects.slice(0, 2));
+                }
+            } catch (err) {
+                console.error("Failed to fetch recent projects", err);
+            }
+        };
+        fetchRecent();
+    }, [user?.username]);
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            const locationName = user?.targetCountry || user?.homeCountry || 'Tokyo';
+            try {
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1`);
+                const geoData = await geoRes.json();
+                
+                if (geoData.results && geoData.results.length > 0) {
+                    const { latitude, longitude } = geoData.results[0];
+                    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`);
+                    const data = await weatherRes.json();
+                    
+                    setWeatherData({
+                        location: locationName,
+                        currentTemp: Math.round(data.current.temperature_2m),
+                        currentCode: data.current.weather_code,
+                        daily: data.daily.time.slice(1, 4).map((time, index) => ({ // next 3 days
+                            date: new Date(time),
+                            maxTemp: Math.round(data.daily.temperature_2m_max[index + 1]),
+                            minTemp: Math.round(data.daily.temperature_2m_min[index + 1]),
+                            code: data.daily.weather_code[index + 1]
+                        }))
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard weather", error);
+            } finally {
+                setWeatherLoading(false);
+            }
+        };
+        fetchWeather();
+    }, [user?.targetCountry, user?.homeCountry]);
+
+    const displayLocation = weatherData?.location || user?.targetCountry || user?.homeCountry || 'Tokyo';
+    const currentWeather = weatherData ? getWeatherDetails(weatherData.currentCode) : { icon: 'cloud', desc: 'Loading...' };
+
+    return (
     <div className="ml-[280px] pt-20 p-8 min-h-screen space-y-6">
         <section className="relative h-[420px] rounded-3xl overflow-hidden glass-panel group">
             <div className="absolute inset-0 z-0">
@@ -16,23 +91,27 @@ const DashboardPage = () => (
                         </div>
                     </div>
                     <div>
-                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">Currently in: Tokyo, JP</span>
-                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, Alex.</h2>
-                        <p className="text-on-surface-variant text-lg mt-2 max-w-2xl font-body-lg">Designing the next generation of modular academic exchanges across 12 countries.</p>
+                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-data-sm mb-3 inline-block border border-primary/20 uppercase tracking-widest">
+                            {user?.targetCountry ? `Target: ${user.targetCountry}` : 'No Target Country Set'}
+                        </span>
+                        <h2 className="font-h1 text-h1 text-white leading-none">Welcome back, {user?.username}.</h2>
+                        <p className="text-on-surface-variant text-lg mt-2 max-w-2xl font-body-lg">
+                            {user?.bio || "Designing the next generation of modular academic exchanges."}
+                        </p>
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10">
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Projects Built</p>
-                        <p className="text-h2 font-h2 text-white">12</p>
+                        <p className="text-h2 font-h2 text-white">{totalProjects}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Countries Explored</p>
-                        <p className="text-h2 font-h2 text-white">05</p>
+                        <p className="text-h2 font-h2 text-white">{user?.targetCountry ? 1 : 0}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-on-surface-variant text-xs uppercase tracking-widest font-data-sm">Students Impacted</p>
-                        <p className="text-h2 font-h2 text-white">154</p>
+                        <p className="text-h2 font-h2 text-white">{totalProjects * 12}</p>
                     </div>
                 </div>
             </div>
@@ -43,43 +122,45 @@ const DashboardPage = () => (
                 <div className="glass-panel rounded-3xl p-6">
                     <div className="flex justify-between items-center mb-8">
                         <h3 className="font-h3 text-h3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">cloud</span> Tokyo Pulse
+                            <span className="material-symbols-outlined text-primary">cloud</span> {displayLocation} Pulse
                         </h3>
-                        <span className="font-data-sm text-on-surface-variant text-sm">Update: 5m ago</span>
+                        <span className="font-data-sm text-on-surface-variant text-sm">Live</span>
                     </div>
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <span className="material-symbols-outlined text-5xl text-primary" style={{fontVariationSettings: "'FILL' 1"}}>wb_sunny</span>
+                                <span className="material-symbols-outlined text-5xl text-primary" style={{fontVariationSettings: "'FILL' 1"}}>{currentWeather.icon}</span>
                                 <div>
-                                    <p className="text-4xl font-h2">22°C</p>
-                                    <p className="text-on-surface-variant font-body-md">Clear Skies</p>
+                                    <p className="text-4xl font-h2">{weatherData ? `${weatherData.currentTemp}°C` : '--°C'}</p>
+                                    <p className="text-on-surface-variant font-body-md">{currentWeather.desc}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
-                            <div className="text-center p-2 rounded-xl bg-white/5 stitch-border">
-                                <p className="text-xs text-on-surface-variant mb-1 font-data-sm">TUE</p>
-                                <span className="material-symbols-outlined text-primary mb-1">wb_cloudy</span>
-                                <p className="text-sm font-bold">20°</p>
-                            </div>
-                            <div className="text-center p-2 rounded-xl bg-white/5 stitch-border">
-                                <p className="text-xs text-on-surface-variant mb-1 font-data-sm">WED</p>
-                                <span className="material-symbols-outlined text-primary mb-1">rainy</span>
-                                <p className="text-sm font-bold">18°</p>
-                            </div>
-                            <div className="text-center p-2 rounded-xl bg-white/5 stitch-border">
-                                <p className="text-xs text-on-surface-variant mb-1 font-data-sm">THU</p>
-                                <span className="material-symbols-outlined text-primary mb-1">sunny</span>
-                                <p className="text-sm font-bold">24°</p>
-                            </div>
+                            {weatherData ? weatherData.daily.map((day, idx) => {
+                                const details = getWeatherDetails(day.code);
+                                const dayName = day.date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                                return (
+                                    <div key={idx} className="text-center p-2 rounded-xl bg-white/5 stitch-border">
+                                        <p className="text-xs text-on-surface-variant mb-1 font-data-sm">{dayName}</p>
+                                        <span className="material-symbols-outlined text-primary mb-1">{details.icon}</span>
+                                        <p className="text-sm font-bold">{day.maxTemp}°</p>
+                                    </div>
+                                );
+                            }) : (
+                                <>
+                                    <div className="text-center p-2 rounded-xl bg-white/5 stitch-border"><p className="text-xs text-on-surface-variant font-data-sm">...</p></div>
+                                    <div className="text-center p-2 rounded-xl bg-white/5 stitch-border"><p className="text-xs text-on-surface-variant font-data-sm">...</p></div>
+                                    <div className="text-center p-2 rounded-xl bg-white/5 stitch-border"><p className="text-xs text-on-surface-variant font-data-sm">...</p></div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-4">
                     <button className="flex-1 glass-panel hover:bg-primary hover:text-on-primary transition-all p-4 rounded-2xl flex items-center justify-center gap-2 group active:scale-95">
                         <span className="material-symbols-outlined">map</span>
-                        <span className="font-bold">Explore Tokyo</span>
+                        <span className="font-bold">Explore {displayLocation}</span>
                     </button>
                     <button className="p-4 glass-panel hover:bg-surface-variant rounded-2xl transition-all active:scale-95">
                         <span className="material-symbols-outlined">bookmark</span>
@@ -93,23 +174,20 @@ const DashboardPage = () => (
                     <Link to="/explore" className="text-primary hover:underline text-sm font-bold">View All Archive</Link>
                 </div>
                 <div className="space-y-4">
-                    {[
-                        { title: "Hyper-Local Logistics in Tokyo Core", phase: "Research Phase", date: "Mar 12, 2024", tags: ["LOGISTICS", "SUSTAINABILITY"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhy3jsrbb4wj2_afrwE33uinCjm9hYljwhX_wwqnvs2FmjXF6epmd2quvvhoJWbJlhaOjD2c2kiHmXpSl5IUBpKy3U8fh53MOTH_ZVDYSZPqMt8DbH7PSIG7UHDqwFoxE5fGSAc0Gzk6tWz3p9VQLLH-_V67yaWt5d7WneLw0Bx1P_cVn2yJK41yUjM-2UXwzOCSI83o0TQ_Rr0av1xs042Z1Tuu8Nm50dMpYvDdj-bxoHxI-eSj4RmUP1KyxOYQdIJOPFGNTi0q0" },
-                        { title: "Cross-Border Academic Verification", phase: "In Review", date: "Feb 28, 2024", tags: ["BLOCKCHAIN", "EDUCATION"], img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCPtr1bXA1LAGfsC7YXCXoFDTl2iV2FTNRllFc8uQdUBP1Hu9BniEhlQWVKmkEJga2BixaDkU1mSvsZXcRPymddhGV-EeYpG0ntIogqEJzK2lMYyB8qcjIRXFDmYjxky_Rfbs9NN97VN-rQMcPBgd3Eulf2wGSn4mwaWipWoRV9FLQ72FkaKHwZKINR1c2IdXloVslNaJpVGidu_xpol6JlD1bMy5g7NIkU0f3lQQiAmgUBnd4A85yK_E7v_gLMiPj6Vr2sRQDP3tQ" }
-                    ].map((proj, idx) => (
-                        <div key={idx} className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
-                            <div className="w-48 h-32 rounded-2xl overflow-hidden shrink-0 stitch-border">
-                                <img src={proj.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={proj.title} />
+                    {recentProjects.length === 0 ? (
+                        <p className="text-on-surface-variant text-sm">No recent projects found.</p>
+                    ) : recentProjects.map((proj) => (
+                        <div key={proj.projectId} className="glass-panel rounded-3xl p-6 flex gap-8 group hover:border-primary/40 transition-colors cursor-pointer">
+                            <div className="w-48 h-32 rounded-2xl overflow-hidden shrink-0 stitch-border bg-surface-variant flex items-center justify-center">
+                                <span className="material-symbols-outlined text-4xl text-on-surface-variant">public</span>
                             </div>
                             <div className="flex-1 py-1">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">{proj.phase}</span>
-                                    <span className="font-data-sm text-on-surface-variant text-xs">{proj.date}</span>
+                                    <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-data-sm uppercase tracking-wider">{proj.ownerUsername}</span>
+                                    <span className="font-data-sm text-on-surface-variant text-xs">{new Date(proj.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{proj.title}</h4>
-                                <div className="flex gap-2 mt-4">
-                                    {proj.tags.map(t => <div key={t} className="px-3 py-1 rounded-full bg-white/5 stitch-border text-[10px] font-data-sm">{t}</div>)}
-                                </div>
+                                <h4 className="font-h3 text-xl text-white group-hover:text-primary transition-colors">{proj.projectName}</h4>
+                                <p className="text-sm text-on-surface-variant mt-2 line-clamp-2">{proj.aboutPitch || proj.description}</p>
                             </div>
                         </div>
                     ))}
@@ -117,6 +195,7 @@ const DashboardPage = () => (
             </div>
         </div>
     </div>
-);
+    );
+};
 
 export default DashboardPage;

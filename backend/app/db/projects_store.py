@@ -61,6 +61,18 @@ def get_project(project_id: str) -> ProjectResponse | None:
     return _row_to_project(row)
 
 
+def get_all_projects() -> list[ProjectResponse]:
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT project_id, project_name, about_pitch, description, budget_value, budget_currency, owner_username, created_at
+            FROM projects
+            ORDER BY created_at DESC
+            """
+        ).fetchall()
+    return [_row_to_project(row) for row in rows]
+
+
 def update_project(project_id: str, data: ProjectUpdate) -> ProjectResponse | None:
     project = get_project(project_id)
     if project is None:

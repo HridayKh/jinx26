@@ -55,6 +55,18 @@ def get_profile(username: str) -> ProfileResponse | None:
     return _row_to_profile(row)
 
 
+def get_all_profiles() -> list[ProfileResponse]:
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT username, bio, class_year, target_college, home_country, target_country, pref_currency, created_at
+            FROM profiles
+            ORDER BY created_at DESC
+            """
+        ).fetchall()
+    return [_row_to_profile(row) for row in rows]
+
+
 def update_profile(username: str, data: ProfileUpdate) -> ProfileResponse | None:
     profile = get_profile(username)
     if profile is None:

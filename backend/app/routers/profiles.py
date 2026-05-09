@@ -12,11 +12,16 @@ def create_profile(data: ProfileCreate):
         raise HTTPException(status_code=409, detail="Username already exists.")
     return profiles_store.create_profile(data)
 
+@router.get("", response_model=list[ProfileResponse])
+def get_all_profiles():
+    """GET /api/v1/profiles — Retrieve all profiles."""
+    return profiles_store.get_all_profiles()
+
 
 @router.get("/{username}", response_model=ProfileResponse)
 def read_profile(username: str):
     """GET /api/v1/profiles/:username — Retrieve a profile."""
-    profile = profiles_store.get_profile(username)
+    profile = profiles_store.get_profile(username) 
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found.")
     return profile

@@ -11,6 +11,11 @@ def create_project(data: ProjectCreate):
     """POST /api/v1/projects — Create a new project."""
     return projects_store.create_project(data)
 
+@router.get("", response_model=list[ProjectResponse])
+def get_all_projects():
+    """GET /api/v1/projects — Retrieve all projects."""
+    return projects_store.get_all_projects()
+
 
 @router.get("/{projectId}", response_model=ProjectResponse)
 def read_project(project_id: Annotated[str, Path(alias="projectId")]):
