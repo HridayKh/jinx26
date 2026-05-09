@@ -1,34 +1,89 @@
-"""
-In-memory store (replace with a real database later).
-"""
 from datetime import datetime, timezone
 from app.models import ProfileCreate, ProfileUpdate, ProfileResponse
+from app.db.sqlite import get_connection
 
-# { username -> ProfileResponse }
-_profiles: dict[str, ProfileResponse] = {}
+
+def _row_to_profile(row) -> ProfileResponse:
+    return ProfileResponse(
+        username=row["username"],
+        bio=row["bio"],
+        class_year=row["class_year"],
+        targetCollege=row["target_college"],
+        homeCountry=row["home_country"],
+        targetCountry=row["target_country"],
+        prefCurrency=row["pref_currency"],
+        createdAt=datetime.fromisoformat(row["created_at"]),
+    )
 
 
 def create_profile(data: ProfileCreate) -> ProfileResponse:
     profile = ProfileResponse(**data.model_dump(), createdAt=datetime.now(timezone.utc))
-    _profiles[profile.username] = profile
+    with get_connection() as connection:
+        connection.execute(
+            """
+            INSERT INTO profiles (
+                username, bio, class_year, target_college, home_country, target_country, pref_currency, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                profile.username,
+                profile.bio,
+                profile.class_year,
+                profile.targetCollege,
+                profile.homeCountry,
+                profile.targetCountry,
+                profile.prefCurrency,
+                profile.createdAt.isoformat(),
+            ),
+        )
+        connection.commit()
     return profile
 
 
 def get_profile(username: str) -> ProfileResponse | None:
-    return _profiles.get(username)
+    with get_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT username, bio, class_year, target_college, home_country, target_country, pref_currency, created_at
+            FROM profiles
+            WHERE username = ?
+            """,
+            (username,),
+        ).fetchone()
+    if row is None:
+        return None
+    return _row_to_profile(row)
 
 
 def update_profile(username: str, data: ProfileUpdate) -> ProfileResponse | None:
-    profile = _profiles.get(username)
+    profile = get_profile(username)
     if profile is None:
         return None
+
     updated = profile.model_copy(update=data.model_dump(exclude_unset=True))
-    _profiles[username] = updated
+    with get_connection() as connection:
+        connection.execute(
+            """
+            UPDATE profiles
+            SET bio = ?, class_year = ?, target_college = ?, home_country = ?, target_country = ?, pref_currency = ?
+            WHERE username = ?
+            """,
+            (
+                updated.bio,
+                updated.class_year,
+                updated.targetCollege,
+                updated.homeCountry,
+                updated.targetCountry,
+                updated.prefCurrency,
+                username,
+            ),
+        )
+        connection.commit()
     return updated
 
 
 def delete_profile(username: str) -> bool:
-    if username not in _profiles:
-        return False
-    del _profiles[username]
-    return True
+    with get_connection() as connection:
+        result = connection.execute("DELETE FROM profiles WHERE username = ?", (username,))
+        connection.commit()
+        return result.rowcount > 0

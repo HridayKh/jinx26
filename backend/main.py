@@ -1,11 +1,21 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import profiles, projects
+from app.db.sqlite import initialize_database
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    initialize_database()
+    yield
+
 
 app = FastAPI(
     title="Student Exchange Hub API",
     description="CRUD API for Profiles (The Passport) and Projects (The Initiative)",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Allow the Vite dev server (and any localhost origin) to talk to this API
