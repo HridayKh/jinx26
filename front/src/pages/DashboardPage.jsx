@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getProfile, getProject } from '../api';
+import { DEFAULT_DEMO_PROJECT_ID, DEFAULT_DEMO_USERNAME } from '../api/defaults';
 
 const DashboardPage = () => {
     const [profile, setProfile] = useState(null);
@@ -12,8 +13,8 @@ const DashboardPage = () => {
         const fetchDashboardData = async () => {
             try {
                 const [profileData, projectData] = await Promise.all([
-                    getProfile('demo_user'),
-                    getProject('proj_seed01'),
+                    getProfile(DEFAULT_DEMO_USERNAME),
+                    getProject(DEFAULT_DEMO_PROJECT_ID),
                 ]);
                 setProfile(profileData);
                 setProject(projectData);

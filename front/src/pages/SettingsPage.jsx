@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProfile } from '../api';
+import { DEFAULT_DEMO_USERNAME } from '../api/defaults';
 
 const SettingsPage = () => {
     const [profile, setProfile] = useState(null);
@@ -9,7 +10,7 @@ const SettingsPage = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const data = await getProfile('demo_user');
+                const data = await getProfile(DEFAULT_DEMO_USERNAME);
                 setProfile(data);
             } catch (err) {
                 setError(err.message || 'Failed to load profile.');

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProject } from '../api';
+import { DEFAULT_DEMO_PROJECT_ID } from '../api/defaults';
 
 const ExplorePage = () => {
     const [project, setProject] = useState(null);
@@ -9,7 +10,7 @@ const ExplorePage = () => {
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const data = await getProject('proj_seed01');
+                const data = await getProject(DEFAULT_DEMO_PROJECT_ID);
                 setProject(data);
             } catch (err) {
                 setError(err.message || 'Failed to load project.');
@@ -20,6 +21,8 @@ const ExplorePage = () => {
 
         fetchProject();
     }, []);
+
+    const projectSummary = project?.description || project?.aboutPitch || 'No description available.';
 
     return (
         <div className="ml-[280px] pt-28 p-8 min-h-screen">
@@ -55,7 +58,7 @@ const ExplorePage = () => {
                             </div>
                             <h3 className="font-h3 text-h3 text-primary mb-3 group-hover:text-primary-container transition-colors">{project.projectName}</h3>
                             <p className="text-on-surface-variant font-body-md line-clamp-3 mb-6">
-                                {project.description || project.aboutPitch || 'No description available.'}
+                                {projectSummary}
                             </p>
                             <div className="mt-auto space-y-4">
                                 <div className="h-[1px] w-full bg-white/10"></div>
