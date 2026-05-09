@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -6,9 +6,11 @@ from datetime import datetime
 # ── Profile models ─────────────────────────────────────────────────────────────
 
 class ProfileCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     username: str
-    bio: Optional[str] = None
-    class_year: Optional[str] = None   # "class" is a reserved word in Python
+    bio: Optional[str] = Field(default=None, max_length=150)
+    class_year: Optional[str] = Field(default=None, alias="class")  # "class" is reserved in Python
     targetCollege: Optional[str] = None
     homeCountry: Optional[str] = None
     targetCountry: Optional[str] = None
@@ -16,8 +18,10 @@ class ProfileCreate(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    bio: Optional[str] = None
-    class_year: Optional[str] = None
+    model_config = ConfigDict(populate_by_name=True)
+
+    bio: Optional[str] = Field(default=None, max_length=150)
+    class_year: Optional[str] = Field(default=None, alias="class")
     targetCollege: Optional[str] = None
     homeCountry: Optional[str] = None
     targetCountry: Optional[str] = None

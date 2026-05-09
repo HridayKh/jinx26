@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Path, status
 from app.models import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.db import projects_store
 
@@ -11,8 +12,8 @@ def create_project(data: ProjectCreate):
     return projects_store.create_project(data)
 
 
-@router.get("/{project_id}", response_model=ProjectResponse)
-def read_project(project_id: str):
+@router.get("/{projectId}", response_model=ProjectResponse)
+def read_project(project_id: Annotated[str, Path(alias="projectId")]):
     """GET /api/v1/projects/:projectId — Retrieve a project."""
     project = projects_store.get_project(project_id)
     if not project:
@@ -20,8 +21,8 @@ def read_project(project_id: str):
     return project
 
 
-@router.put("/{project_id}", response_model=ProjectResponse)
-def update_project(project_id: str, data: ProjectUpdate):
+@router.put("/{projectId}", response_model=ProjectResponse)
+def update_project(project_id: Annotated[str, Path(alias="projectId")], data: ProjectUpdate):
     """PUT /api/v1/projects/:projectId — Update a project."""
     project = projects_store.update_project(project_id, data)
     if not project:
@@ -29,8 +30,8 @@ def update_project(project_id: str, data: ProjectUpdate):
     return project
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(project_id: str):
+@router.delete("/{projectId}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(project_id: Annotated[str, Path(alias="projectId")]):
     """DELETE /api/v1/projects/:projectId — Delete a project."""
     if not projects_store.delete_project(project_id):
         raise HTTPException(status_code=404, detail="Project not found.")
