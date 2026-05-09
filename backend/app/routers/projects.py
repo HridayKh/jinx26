@@ -11,26 +11,26 @@ def create_project(data: ProjectCreate):
     return projects_store.create_project(data)
 
 
-@router.get("/{project_id}", response_model=ProjectResponse)
-def read_project(project_id: str):
+@router.get("/{projectId}", response_model=ProjectResponse)
+def read_project(projectId: str):
     """GET /api/v1/projects/:projectId — Retrieve a project."""
-    project = projects_store.get_project(project_id)
+    project = projects_store.get_project(projectId)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
     return project
 
 
-@router.put("/{project_id}", response_model=ProjectResponse)
-def update_project(project_id: str, data: ProjectUpdate):
+@router.put("/{projectId}", response_model=ProjectResponse)
+def update_project(projectId: str, data: ProjectUpdate):
     """PUT /api/v1/projects/:projectId — Update a project."""
-    project = projects_store.update_project(project_id, data)
+    project = projects_store.update_project(projectId, data)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
     return project
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(project_id: str):
+@router.delete("/{projectId}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(projectId: str):
     """DELETE /api/v1/projects/:projectId — Delete a project."""
-    if not projects_store.delete_project(project_id):
+    if not projects_store.delete_project(projectId):
         raise HTTPException(status_code=404, detail="Project not found.")
